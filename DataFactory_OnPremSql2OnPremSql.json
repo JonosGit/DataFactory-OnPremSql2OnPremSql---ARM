@@ -1,0 +1,240 @@
+﻿{
+  "contentVersion": "1.0.0.0",
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "parameters": {
+    "dataFactoryName": {
+      "type": "string",
+      "metadata": {
+        "description": "Data Factory Account name"
+      }
+    },
+    "OnPremSqlTargetServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem Target Database Server name"
+      }
+    },
+    "OnPremSqlTargetServerUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem Target Database Server user name"
+      }
+    },
+    "OnPremSqlTargetServerPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "OnPrem Target Database Server password"
+      }
+    },
+    "OnPremSqlTargetDatabaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem Target Database name"
+      }
+    },
+    "OnPremSqlTargetTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "table in OnPrem Target Database"
+      }
+    },
+    "OnPremSqlSourceServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem SQL Database Server name"
+      }
+    },
+    "OnPremSqlSourceServerUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem SQL Database Server user name"
+      }
+    },
+    "OnPremSqlSourceServerPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "OnPrem SQL Database Server password"
+      }
+    },
+    "OnPremSqlSourceDatabaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem SQL Database name"
+      }
+    },
+    "OnPremSqlSourceTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem SQL Database Table"
+      }
+    },
+    "OnPremSqlTargetGateway": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem Target Gateway"
+      }
+    },
+    "OnPremSqlSourceGateway": {
+      "type": "string",
+      "metadata": {
+        "description": "OnPrem Source Gateway"
+      }
+    },
+    "StartTime": {
+      "type": "string",
+      "metadata": {
+        "description": "Start Time"
+      }
+    },
+    "StopTime": {
+      "type": "string",
+      "metadata": {
+        "description": "Stop Time"
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "West US",
+        "North Europe"
+      ],
+      "metadata": {
+        "description": "Location where resources will be provisioned"
+      }
+    }
+  },
+  "variables": {
+    "apiVersion": "2014-10-01-preview",
+    "OnPremSqlTargetLinkedServiceName": "OnPremSqlTargetLinkedService",
+    "OnPremSqlSourceLinkedServiceName": "OnPremSqlSourceLinkedService",
+    "OnPremSqlSourceTableName": "onPremSqlSourceTable",
+    "OnPremSqlTargetTableName": "OnPremSqlTargetTable",
+    "PipelineName": "SQL2SQLPipeline"
+  },
+  "resources": [
+    {
+      "name": "[parameters('dataFactoryName')]",
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.DataFactory/datafactories",
+      "location": "[parameters('location')]",
+      "resources": [
+        {
+          "dependsOn": [
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'))]"
+          ],
+          "type": "linkedservices",
+          "name": "[variables('OnPremSqlTargetLinkedServiceName')]",
+          "apiVersion": "[variables('apiVersion')]",
+          "properties": {
+            "type": "OnPremisesSqlLinkedService",
+            "connectionString": "Data Source=,parameters('OnPremSqlTargetServerName');Initial Catalog=,parameters('OnPremSqlTargetDatabaseName');Integrated Security=True;User ID=,parameters('OnPremSqlTargetServerUserName');Password=,parameters('OnPremSqlTargetServerPassword');",
+            "gatewayLocation": "westus",
+            "gatewayName": "[concat(parameters('OnPremSqlTargetGateway'))]"
+          }
+        },
+        {
+          "dependsOn": [
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'))]"
+          ],
+          "type": "linkedservices",
+          "name": "[variables('OnPremSqlSourceLinkedServiceName')]",
+          "apiVersion": "[variables('apiVersion')]",
+          "properties": {
+            "type": "OnPremisesSqlLinkedService",
+            "connectionString": "Data Source=,parameters('OnPremSqlSourceServerName');Initial Catalog=,parameters('OnPremSourceDatabaseName');Integrated Security=True;User ID=,parameters('OnPremSqlSourceServerUserName');Password=,parameters('OnPremSqlSourceServerPassword');",
+            "gatewayLocation": "westus",
+            "gatewayName": "[concat(parameters('OnPremSqlSourceGateway'))]"
+          }
+        },
+        {
+          "apiVersion": "[variables('apiVersion')]",
+          "dependsOn": [ "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'))]" ],
+          "type": "tables",
+          "name": "[variables('OnPremSqlSourceTableName')]",
+          "properties": {
+            "location": {
+              "type": "OnPremisesSqlServerTableLocation",
+              "tableName": "[parameters('OnPremSqlSourceTableName')]",
+              "linkedServiceName": "[variables('OnPremSqlSourceLinkedServiceName')]"
+            },
+            "availability": {
+              "frequency": "Day",
+              "interval": 1
+            }
+          }
+
+        },
+        {
+          "dependsOn": [
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/linkedServices/', variables('OnPremSqlSourceLinkedServiceName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/linkedServices/', variables('OnPremSqlTargetLinkedServiceName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/tables/', variables('OnPremSqlSourceTableName'))]"
+          ],
+          "type": "tables",
+          "name": "[variables('OnPremSqlTargetTableName')]",
+          "apiVersion": "[variables('apiVersion')]",
+          "properties": {
+            "location": {
+              "type": "OnPremisesSqlServerTableLocation",
+              "tableName": "[parameters('OnPremSqlTargetTableName')]",
+              "linkedServiceName": "[variables('OnPremSqlTargetLinkedServiceName')]"
+            },
+            "availability": {
+              "frequency": "Day",
+              "interval": 1
+            }
+          }
+        },
+        {
+          "dependsOn": [
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/linkedServices/', variables('OnPremSqlSourceLinkedServiceName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/linkedServices/', variables('OnPremSqlTargetLinkedServiceName'))]",
+            "[concat('Microsoft.DataFactory/dataFactories/', parameters('dataFactoryName'), '/tables/', variables('OnPremSqlTargetTableName'))]"
+          ],
+          "type": "datapipelines",
+          "name": "[variables('PipelineName')]",
+          "apiVersion": "[variables('apiVersion')]",
+          "properties": {
+            "description": "Fetch Table data on prem and push to OnPrem Target Database",
+            "activities": [
+              {
+                "name": "EgressDataAzure",
+                "description": "Push data from SQL to Sql Azure",
+                "type": "CopyActivity",
+                "inputs": [
+                  {
+                    "name": "[variables('OnPremSqlSourceTableName')]"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "name": "[variables('OnPremSqlTargetTableName')]"
+                  }
+                ],
+                "transformation": {
+                  "source": {
+                    "type": "SQLSource"
+                  },
+                  "sink": {
+                    "/type": "SqlSink"
+                  }
+                },
+                "Policy": {
+                  "concurrency": 1,
+                  "executionPriorityOrder": "NewestFirst",
+                  "style": "StartOfInterval",
+                  "retry": 2,
+                  "timeout": "01:00:00"
+                }
+              }
+            ],
+            "start": "[parameters('StartTime')]",
+            "end": "[parameters('StopTime')]"
+          }
+        }
+      ]
+    }
+  ]
+}

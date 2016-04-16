@@ -1,0 +1,22 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dataFactoryName": { "value": "" },
+    "OnPremSqlTargetServerName": { "value": "" },
+    "OnPremSqlTargetServerUserName": { "value": "" },
+    "OnPremSqlTargetServerPassword": { "value": "" },
+    "OnPremSqlTargetDatabaseName": { "value": "" },
+    "OnPremSqlTargetTableName": { "value": "" },
+    "OnPremSqlSourceServerName": { "value": "" },
+    "OnPremSqlSourceServerUserName": { "value": "" },
+    "OnPremSqlSourceServerPassword": { "value": "" },
+    "OnPremSqlSourceDatabaseName": { "value": "" },
+    "OnPremSqlSourceTableName": { "value": "" },
+    "OnPremSqlTargetGateway": { "value": "" },
+    "OnPremSqlSourceGateway": { "value": "" },
+    "StartTime": { "value": "2016-04-09T00:00:00Z" },
+    "StopTime": { "value": "2016-05-12T00:00:00Z" },
+    "Location": { "value": "West US" }
+  }
+}
