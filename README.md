@@ -10,3 +10,4 @@ Login-AzureRMAccount
 New-AzureRmResourceGroup -Location "WESTUS" -Name "DataFactory"
 
 New-AzureRmResourceGroupDeployment -ResourceGroupName "DataFactory" -TemplateFile C:\Temp\DataFactoryOnPremtoSqlAzure.json -TemplateParameterFile C:\Temp\DataFactoryARM_Answer.json
+-
